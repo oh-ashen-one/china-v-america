@@ -1,0 +1,107 @@
+{
+  "project": "china-v-america",
+  "branchName": "ralph/landing",
+  "description": "Cinematic China vs America AI landing. Desktop 1440–1920 is the film hero.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Next.js app builds with HTTP-ready homepage",
+      "description": "Scaffold Next.js App Router + TS. No Inter. No fake next/font subsets (Noto Serif SC only allows cyrillic/latin/latin-ext/vietnamese). Homepage must exist.",
+      "acceptanceCriteria": [
+        "package.json has next + react + typescript",
+        "src/app/page.tsx and layout.tsx exist",
+        "npm install && npm run build exits 0"
+      ],
+      "priority": 1,
+      "passes": false,
+      "verify": "npm install && npm run build"
+    },
+    {
+      "id": "US-002",
+      "title": "Dual-rail visual system",
+      "description": "America: black, NASA blue, legal-pad amber, grotesque type, hairline rules. China: lacquer, cinnabar, jade, gold, night cyan. Persistent vs spine. Cursor-X crossfade.",
+      "acceptanceCriteria": [
+        "globals.css defines both rail token sets",
+        "Desktop layout is dual-rail with a center spine",
+        "npm run build exits 0"
+      ],
+      "priority": 2,
+      "passes": false,
+      "verify": "npm run build"
+    },
+    {
+      "id": "US-003",
+      "title": "Diegetic 8-14s boot, skippable",
+      "description": "Not a Bootstrap bar. localStorage skip after first visit.",
+      "acceptanceCriteria": [
+        "Boot component exists and is used from the homepage",
+        "Skip path exists",
+        "npm run build exits 0"
+      ],
+      "priority": 3,
+      "passes": false,
+      "verify": "npm run build"
+    },
+    {
+      "id": "US-004",
+      "title": "Hero thesis + CTA",
+      "description": "One sharp sentence, CTA Enter the comparison.",
+      "acceptanceCriteria": [
+        "Hero on homepage with CTA",
+        "npm run build exits 0"
+      ],
+      "priority": 4,
+      "passes": false,
+      "verify": "npm run build"
+    },
+    {
+      "id": "US-005",
+      "title": "Interactive scoreboard",
+      "description": "Open weights, closed flagships, agents, video, speech, robotics, on-device, export, energy, talent. Hover expands. Label estimates.",
+      "acceptanceCriteria": [
+        "Scoreboard on homepage",
+        "npm run build exits 0"
+      ],
+      "priority": 5,
+      "passes": false,
+      "verify": "npm run build"
+    },
+    {
+      "id": "US-006",
+      "title": "Scrubbable 2016-2026 timeline",
+      "description": "Real beats, estimates labeled.",
+      "acceptanceCriteria": [
+        "Timeline on homepage",
+        "npm run build exits 0"
+      ],
+      "priority": 6,
+      "passes": false,
+      "verify": "npm run build"
+    },
+    {
+      "id": "US-007",
+      "title": "Lab dossiers",
+      "description": "OpenAI Anthropic DeepMind xAI Meta + dark horse; Qwen DeepSeek ByteDance Zhipu Moonshot Huawei.",
+      "acceptanceCriteria": [
+        "Dossiers on homepage",
+        "npm run build exits 0"
+      ],
+      "priority": 7,
+      "passes": false,
+      "verify": "npm run build"
+    },
+    {
+      "id": "US-008",
+      "title": "Essay + toys + colophon",
+      "description": "400-700 word essay, arena, map, export slider, day/night, cmd-k, loaders, colophon.",
+      "acceptanceCriteria": [
+        "Essay and at least two toys on homepage",
+        "Colophon lists typefaces",
+        "npm run build exits 0"
+      ],
+      "priority": 8,
+      "passes": false,
+      "verify": "npm run build"
+    }
+  ]
+}
