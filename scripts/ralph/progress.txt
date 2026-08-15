@@ -61,3 +61,15 @@ Started: Sat Aug 15 13:27:32 EDT 2026
 - files: src/components/scoreboard.tsx, src/app/page.tsx
 - checks passed
 ---
+
+## 2026-08-15 22:11 UTC - US-006
+- verify_ok: True
+- files: src/components/timeline.tsx, src/app/page.tsx
+- checks passed
+---
+
+## 2026-08-15 22:52 UTC - US-007
+- verify_ok: False
+- files: (none)
+- no files emitted
+---

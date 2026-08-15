@@ -3,6 +3,7 @@ import Boot from "../components/boot";
 import Hero from "../components/hero";
 import Scoreboard from "../components/scoreboard";
 import Timeline from "../components/timeline";
+import Dossiers from "../components/dossiers";
 
 type Token = { cjk?: string; name: string; hex: string; swatch: string };
 
@@ -59,6 +60,9 @@ export default function Home() {
 
           {/* US-006 · scrubbable 2016-2026 timeline, real beats on both rails */}
           <Timeline />
+
+          {/* US-007 · lab dossiers, file cards in each rail */}
+          <Dossiers />
 
           {/* ---- dual-rail spec section ---------------------------------- */}
           <section id="spec" className="rail-grid spec" aria-label="Dual-rail visual system">

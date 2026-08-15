@@ -28,7 +28,7 @@ BRIEF_PATH = SCRIPT_DIR / "BRIEF.md"
 
 QWEN_SSH = os.environ.get("QWEN_SSH", "studio")
 QWEN_API = os.environ.get("QWEN_API", "http://127.0.0.1:1234/v1/chat/completions")
-QWEN_MODEL = os.environ.get("QWEN_MODEL", "mlx-community/Qwen3.8-27B-8bit")
+QWEN_MODEL = os.environ.get("QWEN_MODEL", "ralph-showcase")
 
 SKIP_DIR_NAMES = {
     ".git",
@@ -116,33 +116,36 @@ def _consume_sse(stream, content_parts: list[str], think_parts: list[str]) -> No
         n += 1
         if n % 25 == 0:
             reply = "".join(content_parts)
+            think_so_far = "".join(think_parts)
             (SCRIPT_DIR / "LAST_REPLY.md").write_text(reply)
-            (SCRIPT_DIR / "LAST_THINKING.md").write_text("".join(think_parts))
-            # Flush complete FILE blocks as they arrive so a timeout
-            # cannot throw away boot.tsx because globals.css is still streaming.
+            (SCRIPT_DIR / "LAST_THINKING.md").write_text(think_so_far)
+            blob = reply if has_file_blocks(reply) else think_so_far
             try:
-                write_files(reply, repo_root())
+                write_files(blob, repo_root())
             except Exception as exc:
                 print(f"  mid-stream write skipped: {exc}", flush=True)
 
 
 def chat(user: str) -> str:
-    # Stream so a 60-minute timeout still leaves FILE blocks on disk.
+    # LMS Qwen3.8 ignores enable_thinking=false and dumps every token into
+    # reasoning_content. Prefilling </think> makes content come back as text.
     payload = {
         "model": QWEN_MODEL,
         "messages": [
             {"role": "system", "content": QWEN_MD.read_text()},
             {"role": "user", "content": user},
+            {"role": "assistant", "content": "</think>\n"},
         ],
-        "temperature": 0.8,
-        "top_p": 0.95,
+        "temperature": 0.7,
+        "top_p": 0.9,
         "top_k": 20,
-        "max_tokens": 32768,
+        "max_tokens": 8192,
         "stream": True,
-        "reasoning_effort": "high",
+        "enable_thinking": False,
+        "reasoning_effort": "low",
         "chat_template_kwargs": {
-            "enable_thinking": True,
-            "preserve_thinking": True,
+            "enable_thinking": False,
+            "preserve_thinking": False,
         },
     }
     body = json.dumps(payload)
@@ -150,7 +153,7 @@ def chat(user: str) -> str:
     think_parts: list[str] = []
     if QWEN_SSH:
         remote = (
-            f"curl -sS -N -m 3600 {QWEN_API} "
+            f"curl -sS -N -m 600 {QWEN_API} "
             f"-H 'Content-Type: application/json' -d @-"
         )
         proc = subprocess.Popen(
@@ -164,7 +167,7 @@ def chat(user: str) -> str:
             proc.stdin.write(body.encode())
             proc.stdin.close()
             _consume_sse(proc.stdout, content_parts, think_parts)
-            proc.wait(timeout=3700)
+            proc.wait(timeout=630)
         except Exception:
             proc.kill()
             raise
@@ -176,16 +179,15 @@ def chat(user: str) -> str:
             data=body.encode(),
             headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(req, timeout=3600) as resp:
+        with urllib.request.urlopen(req, timeout=600) as resp:
             _consume_sse(resp, content_parts, think_parts)
     content = "".join(content_parts)
     think = "".join(think_parts)
     (SCRIPT_DIR / "LAST_REPLY.md").write_text(content)
     if think:
         (SCRIPT_DIR / "LAST_THINKING.md").write_text(think)
-    # Only promote thinking when it contains *fenced* FILE blocks.
-    # Unfenced ### FILE: headers in a plan would overwrite real source.
-    if not has_file_blocks(content) and think and FILE_RE.search(think):
+    # If LMS still hid the files in reasoning, take them from there.
+    if not has_file_blocks(content) and think and has_file_blocks(think):
         content = think
     return content
 

@@ -87,7 +87,7 @@
         "npm run build exits 0"
       ],
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "verify": "npm run build && grep -R -q 'OpenAI' src && grep -R -q 'Anthropic' src && grep -R -q 'Qwen' src && grep -R -q 'Moonshot' src && grep -R -q 'DeepSeek' src"
     },
     {
