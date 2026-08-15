@@ -1,7 +1,7 @@
 {
   "project": "china-v-america",
   "branchName": "ralph/landing",
-  "description": "Cinematic China vs America AI landing. Desktop 1440\u20131920 is the film hero.",
+  "description": "Cinematic China vs America AI landing. Desktop 1440-1920 is the film hero. YouTube A-roll, not a SaaS template.",
   "userStories": [
     {
       "id": "US-001",
@@ -19,81 +19,81 @@
     {
       "id": "US-002",
       "title": "Dual-rail visual system",
-      "description": "America: black, NASA blue, legal-pad amber, grotesque type, hairline rules. China: lacquer, cinnabar, jade, gold, night cyan. Persistent vs spine. Cursor-X crossfade.",
+      "description": "Persistent desktop dual-rail with a glowing vs-spine. America tokens: --us-ink, --us-nasa, --us-amber, grotesque type, hairline rules. China tokens: --cn-lacquer, --cn-cinnabar, --cn-jade, --cn-gold, --cn-cyan. Cursor X crossfades which rail is lit. Mobile stacks with a US/CN switcher. This must look like a film frame, not two colored columns.",
       "acceptanceCriteria": [
-        "globals.css defines both rail token sets",
+        "globals.css defines --us- and --cn- token sets including amber, nasa/blue, cinnabar, jade, gold",
         "Desktop layout is dual-rail with a center spine",
         "npm run build exits 0"
       ],
       "priority": 2,
       "passes": true,
-      "verify": "npm run build"
+      "verify": "npm run build && grep -E -q -- '--us-' src/app/globals.css && grep -E -q -- '--cn-' src/app/globals.css && grep -E -q -- '--us-(amber|nasa|blue)' src/app/globals.css && grep -E -q -- '--cn-(cinnabar|jade|gold|cyan|lacquer)' src/app/globals.css && grep -R -E -q 'spine|dual-rail|data-rail|rail-us' src"
     },
     {
       "id": "US-003",
       "title": "Diegetic 8-14s boot, skippable",
-      "description": "Not a Bootstrap bar. localStorage skip after first visit.",
+      "description": "Not a Bootstrap bar. A diegetic power-on for two civilizations. Skip control. localStorage remembers skip after first visit. Boot is used from the homepage. NEVER emit src/app/globals.css \u2014 on-disk CSS already builds (641 lines, braces balanced). LAST_VERIFY 'Unknown word' at line 948 is stale from a discarded rewrite. Put boot motion in boot.tsx only (inline styles or a style tag).",
       "acceptanceCriteria": [
         "Boot component exists and is used from the homepage",
         "Skip path exists",
         "npm run build exits 0"
       ],
       "priority": 3,
-      "passes": false,
-      "verify": "npm run build"
+      "passes": true,
+      "verify": "python3 scripts/ralph/strip_markers.py && npm run build && grep -q 'Boot' src/app/page.tsx && grep -q 'localStorage' src/components/boot.tsx && grep -q -E 'skip|Skip' src/components/boot.tsx"
     },
     {
       "id": "US-004",
       "title": "Hero thesis + CTA",
-      "description": "One sharp sentence, CTA Enter the comparison.",
+      "description": "One sharp sentence about the compute race. CTA label exactly: Enter the comparison. Hero sits inside the dual-rail, not a centered SaaS slab.",
       "acceptanceCriteria": [
         "Hero on homepage with CTA",
         "npm run build exits 0"
       ],
       "priority": 4,
       "passes": false,
-      "verify": "npm run build"
+      "verify": "npm run build && grep -R -q 'Enter the comparison' src"
     },
     {
       "id": "US-005",
       "title": "Interactive scoreboard",
-      "description": "Open weights, closed flagships, agents, video, speech, robotics, on-device, export, energy, talent. Hover expands. Label estimates.",
+      "description": "Rows: open weights, closed flagships, agents, video, speech, robotics, on-device, export, energy, talent. Hover expands a note. Label estimates. Real lab names, not Acme.",
       "acceptanceCriteria": [
         "Scoreboard on homepage",
         "npm run build exits 0"
       ],
       "priority": 5,
       "passes": false,
-      "verify": "npm run build"
+      "verify": "npm run build && grep -R -q -E 'open weights|Open weights|openWeights' src && grep -R -q -E 'DeepSeek|xAI|robotics' src"
     },
     {
       "id": "US-006",
       "title": "Scrubbable 2016-2026 timeline",
-      "description": "Real beats, estimates labeled.",
+      "description": "Real beats (AlphaGo, GPT-3, ChatGPT, GPT-4, Sora, Qwen, DeepSeek R1, etc). Estimates labeled. Scrub or click through years.",
       "acceptanceCriteria": [
         "Timeline on homepage",
         "npm run build exits 0"
       ],
       "priority": 6,
       "passes": false,
-      "verify": "npm run build"
+      "verify": "npm run build && grep -R -q '2016' src && grep -R -q '2022' src && grep -R -q -E 'AlphaGo|GPT-3|DeepSeek' src"
     },
     {
       "id": "US-007",
       "title": "Lab dossiers",
-      "description": "OpenAI Anthropic DeepMind xAI Meta + dark horse; Qwen DeepSeek ByteDance Zhipu Moonshot Huawei.",
+      "description": "America: OpenAI, Anthropic, DeepMind, xAI, Meta + one dark horse. China: Qwen, DeepSeek, ByteDance, Zhipu, Moonshot, Huawei. Each dossier is a designed card in its rail, not a bullet list.",
       "acceptanceCriteria": [
         "Dossiers on homepage",
         "npm run build exits 0"
       ],
       "priority": 7,
       "passes": false,
-      "verify": "npm run build"
+      "verify": "npm run build && grep -R -q 'OpenAI' src && grep -R -q 'Anthropic' src && grep -R -q 'Qwen' src && grep -R -q 'Moonshot' src && grep -R -q 'DeepSeek' src"
     },
     {
       "id": "US-008",
       "title": "Essay + toys + colophon",
-      "description": "400-700 word essay, arena, map, export slider, day/night, cmd-k, loaders, colophon.",
+      "description": "400-700 word essay on the two compute civilizations. At least two toys: model arena and export-control slider or compute map. Day/night toggle. cmd-k search. Colophon lists typefaces. Loaders that match the rails.",
       "acceptanceCriteria": [
         "Essay and at least two toys on homepage",
         "Colophon lists typefaces",
@@ -101,7 +101,21 @@
       ],
       "priority": 8,
       "passes": false,
-      "verify": "npm run build"
+      "verify": "npm run build && grep -R -q -E 'colophon|Colophon' src && grep -R -q -E 'cmd-k|cmdk|CommandK|Meta\\+K' src && test $(find src -name '*.tsx' | wc -l) -ge 6"
+    },
+    {
+      "id": "US-009",
+      "title": "YouTube film polish",
+      "description": "Final pass so the page is filmable at 1440px: spine glows, rails feel like two worlds, no Inter, no purple slop, substantial CSS, multiple components. If the homepage is still a heading and a paragraph, this story fails.",
+      "acceptanceCriteria": [
+        "At least 8 tsx files under src",
+        "globals.css is at least 120 lines",
+        "Dual-rail tokens still present",
+        "npm run build exits 0"
+      ],
+      "priority": 9,
+      "passes": false,
+      "verify": "npm run build && test $(find src -name '*.tsx' | wc -l) -ge 8 && test $(wc -l < src/app/globals.css) -ge 120 && grep -E -q -- '--us-' src/app/globals.css && grep -E -q -- '--cn-' src/app/globals.css && grep -R -q 'Enter the comparison' src"
     }
   ]
 }

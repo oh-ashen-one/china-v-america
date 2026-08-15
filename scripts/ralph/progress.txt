@@ -25,3 +25,21 @@ Started: Sat Aug 15 13:27:32 EDT 2026
 - files: package.json, tsconfig.json, next.config.mjs, gitignore, src/app/globals.css, src/app/layout.tsx, src/app/page.tsx
 - checks passed
 ---
+
+## 2026-08-15 18:34 UTC - US-002
+- verify_ok: True
+- files: src/app/globals.css, src/app/layout.tsx, src/components/rail-bias.tsx, src/app/page.tsx
+- checks passed
+---
+
+## 2026-08-15 19:14 UTC - US-003
+- verify_ok: False
+- files: src/components/boot.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---
+
+## 2026-08-15 20:00 UTC - US-003
+- verify_ok: False
+- files: src/components/boot.tsx, src/app/page.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---

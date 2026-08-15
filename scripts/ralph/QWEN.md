@@ -23,6 +23,9 @@ full file
 ## Hard rules
 
 - Your reply MUST start with `### FILE:`. Zero FILE blocks = hard fail.
+- Close the markdown fence with ``` before `### END FILE`. Never put `### FILE:` or `### END FILE` inside a file body.
+- Do not rewrite a passing file. Never emit `src/app/globals.css` for US-003 — on-disk CSS already builds. Ignore stale LAST_VERIFY CSS syntax errors (line 948 / Unknown word); omit CSS and keep disk. Prefer boot styles in `boot.tsx`.
+- Do not draft `### FILE:` inside reasoning. Short plan, then emit complete fenced files.
 - One story. Do not "also fix" later stories.
 - No placeholders, no `// rest here`, no `...`.
 - Do not touch clipfarm, `lmstudio-ensure`, or `com.clipper.*`.

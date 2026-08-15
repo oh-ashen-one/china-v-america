@@ -1,4 +1,5 @@
 import RailBias from "../components/rail-bias";
+import Boot from "../components/boot";
 
 type Token = { cjk?: string; name: string; hex: string; swatch: string };
 
@@ -20,6 +21,9 @@ const CN_TOKENS: Token[] = [
 export default function Home() {
   return (
     <div className="app-root">
+      {/* US-003 · diegetic cold open, first visit only (localStorage) */}
+      <Boot />
+
       <RailBias />
 
       {/* fixed atmosphere: US half / CN half / center spine line */}

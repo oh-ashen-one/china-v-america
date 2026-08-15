@@ -40,7 +40,7 @@
       ],
       "priority": 3,
       "passes": false,
-      "verify": "npm run build && grep -R -q -E 'Boot|boot' src && grep -R -q 'localStorage' src && grep -R -q -E 'skip|Skip' src"
+      "verify": "npm run build && grep -q 'Boot' src/app/page.tsx && grep -q 'localStorage' src/components/boot.tsx && grep -q -E 'skip|Skip' src/components/boot.tsx"
     },
     {
       "id": "US-004",

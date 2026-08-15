@@ -40,6 +40,7 @@ SKIP_DIR_NAMES = {
     "archive",
     ".turbo",
     "coverage",
+    "__pycache__",
 }
 SKIP_COMMIT_PATHS = [
     "node_modules",
@@ -48,6 +49,8 @@ SKIP_COMMIT_PATHS = [
     "dist",
     "build",
     "coverage",
+    "__pycache__",
+    "scripts/ralph/__pycache__",
     "scripts/ralph/LAST_REPLY.md",
     "scripts/ralph/LAST_THINKING.md",
     "scripts/ralph/LAST_VERIFY.txt",
@@ -112,8 +115,15 @@ def _consume_sse(stream, content_parts: list[str], think_parts: list[str]) -> No
             think_parts.append(delta["reasoning_content"])
         n += 1
         if n % 25 == 0:
-            (SCRIPT_DIR / "LAST_REPLY.md").write_text("".join(content_parts))
+            reply = "".join(content_parts)
+            (SCRIPT_DIR / "LAST_REPLY.md").write_text(reply)
             (SCRIPT_DIR / "LAST_THINKING.md").write_text("".join(think_parts))
+            # Flush complete FILE blocks as they arrive so a timeout
+            # cannot throw away boot.tsx because globals.css is still streaming.
+            try:
+                write_files(reply, repo_root())
+            except Exception as exc:
+                print(f"  mid-stream write skipped: {exc}", flush=True)
 
 
 def chat(user: str) -> str:
@@ -173,15 +183,15 @@ def chat(user: str) -> str:
     (SCRIPT_DIR / "LAST_REPLY.md").write_text(content)
     if think:
         (SCRIPT_DIR / "LAST_THINKING.md").write_text(think)
-    if not has_file_blocks(content) and think and has_file_blocks(think):
-        content = think
-    elif not content and think:
+    # Only promote thinking when it contains *fenced* FILE blocks.
+    # Unfenced ### FILE: headers in a plan would overwrite real source.
+    if not has_file_blocks(content) and think and FILE_RE.search(think):
         content = think
     return content
 
 
 def has_file_blocks(text: str) -> bool:
-    return bool(text and (FILE_RE.search(text) or FILE_RE_ALT.search(text)))
+    return bool(text and re.search(r"###\s*FILE:\s*\S+", text))
 
 
 def safe_rel(path: str) -> str | None:
@@ -202,25 +212,105 @@ def safe_rel(path: str) -> str | None:
     return rel
 
 
+HEADER_RE = re.compile(r"###\s*FILE:\s*[`']?([^\s`']+)[`']?[^\n]*\n")
+MARKER_LINE_RE = re.compile(r"(?m)^###\s*(?:END FILE|FILE:)\b")
+PLANNING_HEAD = re.compile(
+    r"^(Complete file\.?|Copy existing|Full rewrite|Let me |I'll |I will |Now let |Wait[, ]|Hmm[, ])",
+    re.I,
+)
+
+
+def _looks_like_planning(body: str) -> bool:
+    head = body.lstrip()
+    if PLANNING_HEAD.match(head) or head.startswith("### "):
+        return True
+    return False
+
+
+def _clean_file_body(body: str) -> str:
+    body = body.replace("\r\n", "\n")
+    body = re.sub(r"^```[\w.+-]*\n", "", body)
+    # Headers win: never let a missing closer swallow the next file.
+    body = re.split(r"\n###\s*(?:END FILE|FILE:)\b", body, maxsplit=1)[0]
+    body = re.sub(r"(?m)^###\s*(?:END FILE|FILE:).*\n?", "", body)
+    body = re.sub(r"\n```[ \t]*\Z", "\n", body)
+    return body if body.endswith("\n") else body + "\n"
+
+
+def parse_file_blocks(text: str) -> list[tuple[str, str]]:
+    """Split on ### FILE: headers. A forgotten ``` must not eat the next file."""
+    matches = list(HEADER_RE.finditer(text))
+    pairs: list[tuple[str, str]] = []
+    for i, m in enumerate(matches):
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        pairs.append((m.group(1), text[m.end() : end]))
+    return pairs
+
+
+def strip_leaked_markers(root: Path) -> list[str]:
+    """Truncate any source file that still contains Ralph ### FILE / END FILE lines."""
+    cleaned: list[str] = []
+    for p in root.rglob("*"):
+        rel_parts = p.relative_to(root).parts
+        if any(part in SKIP_DIR_NAMES or part == "scripts" for part in rel_parts):
+            continue
+        if not p.is_file() or p.suffix.lower() not in SOURCE_SUFFIXES:
+            continue
+        text = p.read_text(errors="replace")
+        hit = MARKER_LINE_RE.search(text)
+        if not hit:
+            continue
+        p.write_text(text[: hit.start()].rstrip() + "\n")
+        cleaned.append(p.relative_to(root).as_posix())
+        print(f"  stripped Ralph markers from {cleaned[-1]}", flush=True)
+    return cleaned
+
+
+def _block_complete(raw: str) -> bool:
+    return bool(re.search(r"###\s*END FILE", raw) or re.search(r"\n```[ \t]*\Z", raw.strip()))
+
+
 def write_files(text: str, dest: Path) -> list[str]:
     written: list[str] = []
-    pairs = FILE_RE.findall(text)
+    pairs = parse_file_blocks(text)
     if not pairs:
-        pairs = FILE_RE_ALT.findall(text)
-    for path, content in pairs:
+        pairs = list(FILE_RE.findall(text)) or list(FILE_RE_ALT.findall(text))
+    last_idx = len(pairs) - 1
+    for i, (path, content) in enumerate(pairs):
+        if i == last_idx and not _block_complete(content):
+            print(f"  skip incomplete last file {path}", flush=True)
+            continue
         rel = safe_rel(path)
         if not rel:
             continue
-        body = content
-        if body.startswith("```"):
-            body = re.sub(r"^```[\w.+-]*\n", "", body, count=1)
-        body = re.sub(r"\n```\s*$", "\n", body)
-        body = re.sub(r"\n###\s*END FILE\s*$", "\n", body)
+        body = _clean_file_body(content)
+        if not body.strip() or body.lstrip().startswith("### FILE:"):
+            continue
+        if _looks_like_planning(body):
+            print(f"  skip {rel}: planning prose, not source", flush=True)
+            continue
+        if rel.endswith(".css") and body.count("{") != body.count("}"):
+            print(f"  skip unbalanced css {rel}", flush=True)
+            continue
         fp = dest / rel
+        if rel.endswith(".css") and fp.exists() and len(body) < int(fp.stat().st_size * 0.85):
+            print(f"  skip shorter css {rel} ({len(body)} < {fp.stat().st_size})", flush=True)
+            continue
+        if rel.endswith("globals.css") and fp.exists():
+            old = fp.read_text(errors="replace")
+            if old.count("{") == old.count("}") and old.count("{") > 0:
+                try:
+                    story_now = next_story(load_prd())
+                except Exception:
+                    story_now = None
+                if story_now and story_now.get("id") == "US-003":
+                    print(f"  skip valid existing css {rel}: US-003 must not replace it", flush=True)
+                    continue
         fp.parent.mkdir(parents=True, exist_ok=True)
-        fp.write_text(body if body.endswith("\n") else body + "\n")
+        fp.write_text(body)
         written.append(rel)
         print(f"  wrote {rel} ({len(body)} bytes)", flush=True)
+    strip_leaked_markers(dest)
     return written
 
 
@@ -248,9 +338,11 @@ def run_verify(cmd: str, cwd: Path) -> tuple[bool, str]:
 
 
 def extract_verify_cmd(story: dict) -> str:
-    if story.get("verify"):
-        return str(story["verify"])
-    return "true"
+    cmd = str(story["verify"]) if story.get("verify") else "true"
+    strip = "python3 scripts/ralph/strip_markers.py"
+    if "strip_markers.py" not in cmd:
+        return f"{strip} && {cmd}"
+    return cmd
 
 
 def live_story(story: dict) -> dict:
@@ -279,6 +371,8 @@ def ensure_gitignore(root: Path) -> None:
         "scripts/ralph/LAST_REPLY.md",
         "scripts/ralph/LAST_THINKING.md",
         "scripts/ralph/LAST_VERIFY.txt",
+        "__pycache__/",
+        "*.pyc",
     ]
     existing = gi.read_text() if gi.exists() else ""
     missing = [line for line in needed if line not in existing]
@@ -333,8 +427,8 @@ def tree_snapshot(root: Path) -> str:
 
 
 def file_snapshot(root: Path) -> str:
-    chunks: list[str] = []
-    total = 0
+    last = LAST_VERIFY.read_text() if LAST_VERIFY.exists() else ""
+    files: list[Path] = []
     for p in sorted(root.rglob("*")):
         rel_parts = p.relative_to(root).parts
         if any(part in SKIP_DIR_NAMES or part == "scripts" for part in rel_parts):
@@ -343,15 +437,31 @@ def file_snapshot(root: Path) -> str:
             continue
         if p.name in {"package-lock.json", "pnpm-lock.yaml"}:
             continue
+        files.append(p)
+    # Files named in LAST_VERIFY first so a CSS/TS error is shown in full.
+    def _prio(p: Path) -> tuple[int, str]:
+        rel = p.relative_to(root).as_posix()
+        return (0 if rel in last else 1, rel)
+
+    chunks: list[str] = []
+    total = 0
+    omitted: list[str] = []
+    for p in sorted(files, key=_prio):
+        rel = p.relative_to(root).as_posix()
         if p.stat().st_size > 80_000:
-            chunks.append(f"===== {p.relative_to(root)} =====\n[skipped, {p.stat().st_size} bytes]\n")
+            omitted.append(f"{rel} ({p.stat().st_size} bytes, too large)")
             continue
         text = p.read_text(errors="replace")
         if total + len(text) > 55_000:
-            chunks.append(f"===== {p.relative_to(root)} =====\n[truncated for context]\n")
-            break
-        chunks.append(f"===== {p.relative_to(root)} =====\n{text}")
+            omitted.append(f"{rel} ({p.stat().st_size} bytes)")
+            continue
+        chunks.append(f"===== {rel} =====\n{text}")
         total += len(text)
+    if omitted:
+        chunks.append(
+            "===== OMITTED (complete on disk — do not rewrite from memory) =====\n"
+            + "\n".join(omitted)
+        )
     return "\n\n".join(chunks) or "(no source files yet)"
 
 
@@ -373,6 +483,10 @@ def build_user_prompt(root: Path, story: dict, prd: dict) -> str:
         f"PROGRESS.TXT (tail):\n{progress[-6000:]}\n\n"
         f"LAST_VERIFY.TXT:\n{last[-5000:]}\n\n"
         "Start your reply with ### FILE: and output every file this story needs.\n"
+        "Close each ``` fence before ### END FILE. Never put ### FILE: or ### END FILE inside a file body.\n"
+        "Do not rewrite a file unless this story or LAST_VERIFY requires it. Never emit a truncated CSS/TSX file.\n"
+        "If a snapshot says OMITTED or you cannot finish a file, omit it — the on-disk copy stays.\n"
+        "Do not draft ### FILE blocks in reasoning. Visible reply is the only write path.\n"
     )
 
 
