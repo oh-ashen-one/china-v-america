@@ -1,16 +1,4 @@
 
-added 28 packages, and audited 29 packages in 3s
-
-3 packages are looking for funding
-  run `npm fund` for details
-
-2 high severity vulnerabilities
-
-To address all issues (including breaking changes), run:
-  npm audit fix --force
-
-Run `npm audit` for details.
-
 > china-v-america@0.1.0 build
 > next build
 
@@ -29,14 +17,23 @@ Run `npm audit` for details.
    Collecting build traces ...
 
 Route (app)                              Size     First Load JS
-┌ ○ /                                    138 B          87.4 kB
+┌ ○ /                                    471 B          87.7 kB
 └ ○ /_not-found                          873 B          88.1 kB
-+ First Load JS shared by all            87.2 kB
-  ├ chunks/117-e5476d4bdcce692a.js       31.7 kB
-  ├ chunks/fd9d1056-749e5812300142af.js  53.6 kB
-  └ other shared chunks (total)          1.87 kB
++ First Load JS shared by all            87.3 kB
+  ├ chunks/117-2b01483d4238534a.js       31.7 kB
+  ├ chunks/fd9d1056-701a57a01d1c3987.js  53.6 kB
+  └ other shared chunks (total)          1.88 kB
 
 
 ○  (Static)  prerendered as static content
 
-curl: (7) Failed to connect to localhost port 3123 after 0 ms: Couldn't connect to server
+
+> china-v-america@0.1.0 start
+> next start -p 3123
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3123
+
+ ✓ Starting...
+ ✓ Ready in 106ms
+HTTP:200

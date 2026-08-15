@@ -30,6 +30,7 @@ full file
 - Do not invent a different VERIFY command.
 - Dotfiles keep their leading dot: `.gitignore` not `gitignore`.
 - Frontend: no Inter, no fake `next/font` subsets, no em dash characters, no three equal feature cards, no AI-purple glow.
+- A homepage that is only an `h1` plus a paragraph fails every story after US-001. Build the real UI the current story names.
 - iOS: every referenced type must exist. `AVSpeechSynthesisDelegate` needs `import AVFAudio`. No fake SwiftData preview inits.
 - Cubeland: `index.html` must import `/src/main.ts`. A canvas that never boots is a fail.
 

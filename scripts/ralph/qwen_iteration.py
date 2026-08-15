@@ -91,7 +91,33 @@ def all_passed(prd: dict) -> bool:
     return bool(stories) and all(s.get("passes") for s in stories)
 
 
+def _consume_sse(stream, content_parts: list[str], think_parts: list[str]) -> None:
+    n = 0
+    for raw_line in stream:
+        line = raw_line.decode("utf-8", errors="replace").strip()
+        if not line.startswith("data:"):
+            continue
+        data = line[5:].strip()
+        if data == "[DONE]":
+            break
+        try:
+            chunk = json.loads(data)
+        except json.JSONDecodeError:
+            continue
+        choices = chunk.get("choices") or [{}]
+        delta = (choices[0] or {}).get("delta") or {}
+        if delta.get("content"):
+            content_parts.append(delta["content"])
+        if delta.get("reasoning_content"):
+            think_parts.append(delta["reasoning_content"])
+        n += 1
+        if n % 25 == 0:
+            (SCRIPT_DIR / "LAST_REPLY.md").write_text("".join(content_parts))
+            (SCRIPT_DIR / "LAST_THINKING.md").write_text("".join(think_parts))
+
+
 def chat(user: str) -> str:
+    # Stream so a 60-minute timeout still leaves FILE blocks on disk.
     payload = {
         "model": QWEN_MODEL,
         "messages": [
@@ -101,8 +127,8 @@ def chat(user: str) -> str:
         "temperature": 0.8,
         "top_p": 0.95,
         "top_k": 20,
-        "max_tokens": 65536,
-        "stream": False,
+        "max_tokens": 32768,
+        "stream": True,
         "reasoning_effort": "high",
         "chat_template_kwargs": {
             "enable_thinking": True,
@@ -110,14 +136,28 @@ def chat(user: str) -> str:
         },
     }
     body = json.dumps(payload)
+    content_parts: list[str] = []
+    think_parts: list[str] = []
     if QWEN_SSH:
         remote = (
-            f"curl -sS -m 3600 {QWEN_API} "
+            f"curl -sS -N -m 3600 {QWEN_API} "
             f"-H 'Content-Type: application/json' -d @-"
         )
-        raw = subprocess.check_output(
-            ["ssh", QWEN_SSH, remote], input=body.encode(), timeout=3700
+        proc = subprocess.Popen(
+            ["ssh", QWEN_SSH, remote],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
+        assert proc.stdin and proc.stdout
+        try:
+            proc.stdin.write(body.encode())
+            proc.stdin.close()
+            _consume_sse(proc.stdout, content_parts, think_parts)
+            proc.wait(timeout=3700)
+        except Exception:
+            proc.kill()
+            raise
     else:
         import urllib.request
 
@@ -127,24 +167,31 @@ def chat(user: str) -> str:
             headers={"Content-Type": "application/json"},
         )
         with urllib.request.urlopen(req, timeout=3600) as resp:
-            raw = resp.read()
-    data = json.loads(raw)
-    msg = data["choices"][0]["message"]
-    content = msg.get("content") or ""
-    think = msg.get("reasoning_content") or ""
+            _consume_sse(resp, content_parts, think_parts)
+    content = "".join(content_parts)
+    think = "".join(think_parts)
+    (SCRIPT_DIR / "LAST_REPLY.md").write_text(content)
     if think:
         (SCRIPT_DIR / "LAST_THINKING.md").write_text(think)
-    if not content and think:
-        # Some templates dump the files into reasoning. Still try to extract.
+    if not has_file_blocks(content) and think and has_file_blocks(think):
+        content = think
+    elif not content and think:
         content = think
     return content
+
+
+def has_file_blocks(text: str) -> bool:
+    return bool(text and (FILE_RE.search(text) or FILE_RE_ALT.search(text)))
 
 
 def safe_rel(path: str) -> str | None:
     rel = path.strip().strip("`").strip("'").strip('"')
     if rel.startswith("./"):
         rel = rel[2:]
+    # Only slashes — never lstrip(".") or the set "./" (that turns .gitignore into gitignore).
     rel = rel.lstrip("/")
+    if rel == "gitignore":
+        rel = ".gitignore"
     if not rel or rel in {"path", "relative/path", "relative/path.ext", "relative/path.tsx"}:
         return None
     parts = Path(rel).parts
@@ -206,6 +253,18 @@ def extract_verify_cmd(story: dict) -> str:
     return "true"
 
 
+def live_story(story: dict) -> dict:
+    """Re-read PRD so a watchdog can enrich verify while this process is in chat()."""
+    try:
+        fresh = load_prd()
+    except Exception:
+        return story
+    for item in fresh.get("userStories") or []:
+        if item.get("id") == story.get("id"):
+            return item
+    return story
+
+
 def ensure_gitignore(root: Path) -> None:
     gi = root / ".gitignore"
     needed = [
@@ -230,6 +289,9 @@ def ensure_gitignore(root: Path) -> None:
 
 def commit(root: Path, story: dict) -> None:
     ensure_gitignore(root)
+    stray = root / "gitignore"
+    if stray.exists() and (root / ".gitignore").exists():
+        stray.unlink()
     subprocess.run(
         ["git", "rm", "-r", "--cached", "--ignore-unmatch", *SKIP_COMMIT_PATHS],
         cwd=root,
@@ -356,7 +418,7 @@ def main() -> int:
         append_progress(story, [], False, "no files emitted")
         return 0
 
-    cmd = extract_verify_cmd(story)
+    cmd = extract_verify_cmd(live_story(story))
     ok, out = run_verify(cmd, root)
     LAST_VERIFY.write_text(out[-12000:])
     if ok:
