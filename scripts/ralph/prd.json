@@ -1,7 +1,7 @@
 {
   "project": "china-v-america",
   "branchName": "ralph/landing",
-  "description": "Cinematic China vs America AI landing. Desktop 1440–1920 is the film hero.",
+  "description": "Cinematic China vs America AI landing. Desktop 1440\u20131920 is the film hero.",
   "userStories": [
     {
       "id": "US-001",
@@ -13,7 +13,7 @@
         "npm install && npm run build exits 0"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "verify": "npm install && npm run build"
     },
     {

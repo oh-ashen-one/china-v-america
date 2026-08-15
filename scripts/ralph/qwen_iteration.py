@@ -65,13 +65,13 @@ def chat(user: str) -> str:
     }
     body = json.dumps(payload)
     if QWEN_SSH:
-        cmd = [
-            "ssh", QWEN_SSH,
-            "curl", "-sS", "-m", "3600", QWEN_API,
-            "-H", "Content-Type: application/json",
-            "-d", "@-",
-        ]
-        raw = subprocess.check_output(cmd, input=body.encode(), timeout=3700)
+        remote = (
+            f"curl -sS -m 3600 {QWEN_API} "
+            f"-H 'Content-Type: application/json' -d @-"
+        )
+        raw = subprocess.check_output(
+            ["ssh", QWEN_SSH, remote], input=body.encode(), timeout=3700
+        )
     else:
         import urllib.request
         req = urllib.request.Request(
