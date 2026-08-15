@@ -1,5 +1,6 @@
 import RailBias from "../components/rail-bias";
 import Boot from "../components/boot";
+import Hero from "../components/hero";
 
 type Token = { cjk?: string; name: string; hex: string; swatch: string };
 
@@ -46,9 +47,13 @@ export default function Home() {
           </span>
         </header>
 
-        {/* ---- dual-rail spec section -------------------------------------- */}
+        {/* ---- stage main: hero thesis first, then the spec section ------- */}
         <main className="stage-main">
-          <section className="rail-grid spec" aria-label="Dual-rail visual system">
+          {/* US-004 · hero thesis + CTA, sitting inside the dual-rail */}
+          <Hero />
+
+          {/* ---- dual-rail spec section ---------------------------------- */}
+          <section id="spec" className="rail-grid spec" aria-label="Dual-rail visual system">
             {/* ============ AMERICA RAIL (left) ============================= */}
             <div className="rail rail--us">
               <div className="rail-plate plate--us">
@@ -84,7 +89,7 @@ export default function Home() {
                   <p className="specimen-big">Black field, blue rules.</p>
                   <div className="hairline-row" role="presentation">
                     <span>Grotesque caps carry the headline.</span>
-                    <span>Hairlines are exactly one pixel — never two.</span>
+                    <span>Hairlines are exactly one pixel, never two.</span>
                     <span className="on-amber">Amber marks the legal margin.</span>
                   </div>
                 </div>
@@ -110,7 +115,7 @@ export default function Home() {
                   <span className="latin">China</span>
                 </p>
                 <p className="plate-sub">
-                  Lacquer, cinnabar, jade and gold — night cyan for the late
+                  Lacquer, cinnabar, jade and gold; night cyan for the late
                   shift.
                 </p>
               </div>
@@ -156,7 +161,7 @@ export default function Home() {
         <footer className="rail-grid footbar">
           <span className="foot-us">Persistent Rail · Left</span>
           <p className="foot-mid">
-            Cursor-X — cross the spine to re-bias both rails
+            Cursor-X · cross the spine to re-bias both rails
             <br />
             <span className="cn-line" lang="zh-CN">指针越过脊柱，双侧光线随之交叉淡变</span>
           </p>

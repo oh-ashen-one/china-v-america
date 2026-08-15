@@ -299,12 +299,15 @@ def write_files(text: str, dest: Path) -> list[str]:
         if rel.endswith("globals.css") and fp.exists():
             old = fp.read_text(errors="replace")
             if old.count("{") == old.count("}") and old.count("{") > 0:
-                try:
-                    story_now = next_story(load_prd())
-                except Exception:
-                    story_now = None
-                if story_now and story_now.get("id") == "US-003":
-                    print(f"  skip valid existing css {rel}: US-003 must not replace it", flush=True)
+                last = LAST_VERIFY.read_text() if LAST_VERIFY.exists() else ""
+                css_broken = "globals.css" in last and any(
+                    s in last for s in ("Unknown word", "PostCSSSyntaxError", "Syntax error:")
+                )
+                if not css_broken:
+                    print(
+                        f"  skip valid existing css {rel}: LAST_VERIFY is not a CSS syntax error",
+                        flush=True,
+                    )
                     continue
         fp.parent.mkdir(parents=True, exist_ok=True)
         fp.write_text(body)

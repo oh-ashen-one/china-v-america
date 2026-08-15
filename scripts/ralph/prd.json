@@ -45,13 +45,13 @@
     {
       "id": "US-004",
       "title": "Hero thesis + CTA",
-      "description": "One sharp sentence about the compute race. CTA label exactly: Enter the comparison. Hero sits inside the dual-rail, not a centered SaaS slab.",
+      "description": "One sharp sentence about the compute race. CTA label exactly: Enter the comparison. Hero sits inside the dual-rail, not a centered SaaS slab. NEVER emit src/app/globals.css \u2014 it already builds. Edit page.tsx (and a small hero component if needed). Do not restart the rails.",
       "acceptanceCriteria": [
         "Hero on homepage with CTA",
         "npm run build exits 0"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "verify": "npm run build && grep -R -q 'Enter the comparison' src"
     },
     {
