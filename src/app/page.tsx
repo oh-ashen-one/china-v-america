@@ -2,6 +2,7 @@ import RailBias from "../components/rail-bias";
 import Boot from "../components/boot";
 import Hero from "../components/hero";
 import Scoreboard from "../components/scoreboard";
+import Timeline from "../components/timeline";
 
 type Token = { cjk?: string; name: string; hex: string; swatch: string };
 
@@ -55,6 +56,9 @@ export default function Home() {
 
           {/* US-005 · interactive scoreboard, ten rows across both rails */}
           <Scoreboard />
+
+          {/* US-006 · scrubbable 2016-2026 timeline, real beats on both rails */}
+          <Timeline />
 
           {/* ---- dual-rail spec section ---------------------------------- */}
           <section id="spec" className="rail-grid spec" aria-label="Dual-rail visual system">
@@ -177,4 +181,3 @@ export default function Home() {
     </div>
   );
 }
-

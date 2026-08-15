@@ -69,19 +69,19 @@
     {
       "id": "US-006",
       "title": "Scrubbable 2016-2026 timeline",
-      "description": "Real beats (AlphaGo, GPT-3, ChatGPT, GPT-4, Sora, Qwen, DeepSeek R1, etc). Estimates labeled. Scrub or click through years.",
+      "description": "Real beats (AlphaGo, GPT-3, ChatGPT, GPT-4, Sora, Qwen, DeepSeek R1, etc). Estimates labeled. Scrub or click through years. NEVER emit src/app/globals.css \u2014 it already builds. New timeline component + page.tsx import only. Keep Boot, Hero, Scoreboard.",
       "acceptanceCriteria": [
         "Timeline on homepage",
         "npm run build exits 0"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "verify": "npm run build && grep -R -q '2016' src && grep -R -q '2022' src && grep -R -q -E 'AlphaGo|GPT-3|DeepSeek' src"
     },
     {
       "id": "US-007",
       "title": "Lab dossiers",
-      "description": "America: OpenAI, Anthropic, DeepMind, xAI, Meta + one dark horse. China: Qwen, DeepSeek, ByteDance, Zhipu, Moonshot, Huawei. Each dossier is a designed card in its rail, not a bullet list.",
+      "description": "America: OpenAI, Anthropic, DeepMind, xAI, Meta + one dark horse. China: Qwen, DeepSeek, ByteDance, Zhipu, Moonshot, Huawei. Each dossier is a designed card in its rail, not a bullet list. NEVER emit src/app/globals.css. New dossier component + page.tsx import only. Keep prior sections.",
       "acceptanceCriteria": [
         "Dossiers on homepage",
         "npm run build exits 0"
@@ -93,7 +93,7 @@
     {
       "id": "US-008",
       "title": "Essay + toys + colophon",
-      "description": "400-700 word essay on the two compute civilizations. At least two toys: model arena and export-control slider or compute map. Day/night toggle. cmd-k search. Colophon lists typefaces. Loaders that match the rails.",
+      "description": "400-700 word essay on the two compute civilizations. At least two toys: model arena and export-control slider or compute map. Day/night toggle. cmd-k search. Colophon lists typefaces. Loaders that match the rails. NEVER emit src/app/globals.css. New components + page.tsx imports only. Keep prior sections.",
       "acceptanceCriteria": [
         "Essay and at least two toys on homepage",
         "Colophon lists typefaces",
