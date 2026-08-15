@@ -57,13 +57,13 @@
     {
       "id": "US-005",
       "title": "Interactive scoreboard",
-      "description": "Rows: open weights, closed flagships, agents, video, speech, robotics, on-device, export, energy, talent. Hover expands a note. Label estimates. Real lab names, not Acme.",
+      "description": "Rows: open weights, closed flagships, agents, video, speech, robotics, on-device, export, energy, talent. Hover expands a note. Label estimates. Real lab names, not Acme. NEVER emit src/app/globals.css \u2014 it already builds. New scoreboard component + page.tsx import only. Keep Boot and Hero.",
       "acceptanceCriteria": [
         "Scoreboard on homepage",
         "npm run build exits 0"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "verify": "npm run build && grep -R -q -E 'open weights|Open weights|openWeights' src && grep -R -q -E 'DeepSeek|xAI|robotics' src"
     },
     {

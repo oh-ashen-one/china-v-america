@@ -1,6 +1,7 @@
 import RailBias from "../components/rail-bias";
 import Boot from "../components/boot";
 import Hero from "../components/hero";
+import Scoreboard from "../components/scoreboard";
 
 type Token = { cjk?: string; name: string; hex: string; swatch: string };
 
@@ -51,6 +52,9 @@ export default function Home() {
         <main className="stage-main">
           {/* US-004 · hero thesis + CTA, sitting inside the dual-rail */}
           <Hero />
+
+          {/* US-005 · interactive scoreboard, ten rows across both rails */}
+          <Scoreboard />
 
           {/* ---- dual-rail spec section ---------------------------------- */}
           <section id="spec" className="rail-grid spec" aria-label="Dual-rail visual system">
@@ -173,3 +177,4 @@ export default function Home() {
     </div>
   );
 }
+
