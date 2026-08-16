@@ -73,3 +73,81 @@ Started: Sat Aug 15 13:27:32 EDT 2026
 - files: (none)
 - no files emitted
 ---
+
+## 2026-08-15 23:02 UTC - US-007
+- verify_ok: True
+- files: src/components/dossiers.tsx, src/app/page.tsx
+- checks passed
+---
+
+## 2026-08-15 23:12 UTC - US-008
+- verify_ok: False
+- files: src/components/essay.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---
+
+## 2026-08-15 23:23 UTC - US-008
+- verify_ok: False
+- files: src/components/essay.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---
+
+## 2026-08-15 23:30 UTC - US-008
+- verify_ok: False
+- files: (none)
+- no files emitted
+---
+
+## 2026-08-16 00:29 UTC - US-008
+- verify_ok: False
+- files: (none)
+- no files emitted
+---
+
+## 2026-08-16 01:43 UTC - US-008
+- verify_ok: False
+- files: (none)
+- no files emitted
+---
+
+## 2026-08-16 02:32 UTC - US-008
+- verify_ok: False
+- files: (none)
+- no files emitted
+---
+
+## 2026-08-16 03:38 UTC - US-008
+- verify_ok: False
+- files: (none)
+- no files emitted
+---
+
+## 2026-08-16 03:53 UTC - US-008
+- verify_ok: False
+- files: src/app/page.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---
+
+## 2026-08-16 04:03 UTC - US-008
+- verify_ok: False
+- files: src/app/page.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---
+
+## 2026-08-16 04:11 UTC - US-008
+- verify_ok: False
+- files: src/app/page.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---
+
+## 2026-08-16 04:32 UTC - US-008
+- verify_ok: False
+- files: src/app/page.tsx, src/components/arena.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---
+
+## 2026-08-16 04:57 UTC - US-008
+- verify_ok: False
+- files: src/app/page.tsx
+- checks FAILED — next iteration must fix LAST_VERIFY.txt
+---

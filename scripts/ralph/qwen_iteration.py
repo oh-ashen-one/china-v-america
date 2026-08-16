@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -153,7 +154,7 @@ def chat(user: str) -> str:
     think_parts: list[str] = []
     if QWEN_SSH:
         remote = (
-            f"curl -sS -N -m 600 {QWEN_API} "
+            f"curl -sS -N -m 1800 {QWEN_API} "
             f"-H 'Content-Type: application/json' -d @-"
         )
         proc = subprocess.Popen(
@@ -161,16 +162,31 @@ def chat(user: str) -> str:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            start_new_session=True,
         )
         assert proc.stdin and proc.stdout
+
+        def _kill() -> None:
+            try:
+                os.killpg(proc.pid, 9)
+            except OSError:
+                proc.kill()
+
+        timer = threading.Timer(1810, _kill)
+        timer.daemon = True
+        timer.start()
         try:
             proc.stdin.write(body.encode())
             proc.stdin.close()
             _consume_sse(proc.stdout, content_parts, think_parts)
-            proc.wait(timeout=630)
+            proc.wait(timeout=20)
         except Exception:
-            proc.kill()
+            _kill()
             raise
+        finally:
+            timer.cancel()
+            if proc.poll() is None:
+                _kill()
     else:
         import urllib.request
 
@@ -179,7 +195,7 @@ def chat(user: str) -> str:
             data=body.encode(),
             headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(req, timeout=600) as resp:
+        with urllib.request.urlopen(req, timeout=1800) as resp:
             _consume_sse(resp, content_parts, think_parts)
     content = "".join(content_parts)
     think = "".join(think_parts)

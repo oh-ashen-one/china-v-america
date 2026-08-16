@@ -93,14 +93,14 @@
     {
       "id": "US-008",
       "title": "Essay + toys + colophon",
-      "description": "src/components/essay.tsx ALREADY EXISTS. Do not rewrite it. Emit only three small files: (1) src/app/page.tsx that imports Essay and keeps Boot/Hero/Scoreboard/Timeline/Dossiers, (2) src/components/colophon.tsx that lists typefaces, (3) src/components/cmdk.tsx with cmd-k / CommandK. Optional tiny arena.tsx. NEVER emit globals.css or essay.tsx.",
+      "description": "src/components/essay.tsx ALREADY EXISTS. Do not rewrite it. colophon and cmdk already exist in src. ONLY ONE FILE remains broken: src/app/page.tsx fails to compile. Emit ONLY src/app/page.tsx, nothing else. Hard rules for page.tsx: line 1 must be exactly \"use client\"; (with quotes and semicolon). ALL import statements go at the top of the file, lines 2-15, BEFORE any component code. NEVER place an import statement after a closing brace or at the bottom of the file \u2014 the current file has import { useState } from \"react\" on line 385 after the component, which breaks the build. Keep the existing structure: import Essay from \"../components/essay\" and keep Boot/Hero/Scoreboard/Timeline/Dossiers and the Colophon and CommandK usage. Do NOT emit arena.tsx, globals.css, essay.tsx, or any other file.",
       "acceptanceCriteria": [
         "Essay and at least two toys on homepage",
         "Colophon lists typefaces",
         "npm run build exits 0"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "verify": "npm run build && grep -q Essay src/app/page.tsx && grep -R -q -E 'colophon|Colophon' src && grep -R -q -E 'cmd-k|cmdk|CommandK|Meta\\+K' src"
     },
     {
