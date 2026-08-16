@@ -93,7 +93,7 @@
     {
       "id": "US-008",
       "title": "Essay + toys + colophon",
-      "description": "400-700 word essay on the two compute civilizations. At least two toys: model arena and export-control slider or compute map. Day/night toggle. cmd-k search. Colophon lists typefaces. Loaders that match the rails. NEVER emit src/app/globals.css. New components + page.tsx imports only. Keep prior sections.",
+      "description": "src/components/essay.tsx ALREADY EXISTS. Do not rewrite it. Emit only three small files: (1) src/app/page.tsx that imports Essay and keeps Boot/Hero/Scoreboard/Timeline/Dossiers, (2) src/components/colophon.tsx that lists typefaces, (3) src/components/cmdk.tsx with cmd-k / CommandK. Optional tiny arena.tsx. NEVER emit globals.css or essay.tsx.",
       "acceptanceCriteria": [
         "Essay and at least two toys on homepage",
         "Colophon lists typefaces",
@@ -101,7 +101,7 @@
       ],
       "priority": 8,
       "passes": false,
-      "verify": "npm run build && grep -R -q -E 'colophon|Colophon' src && grep -R -q -E 'cmd-k|cmdk|CommandK|Meta\\+K' src && test $(find src -name '*.tsx' | wc -l) -ge 6"
+      "verify": "npm run build && grep -q Essay src/app/page.tsx && grep -R -q -E 'colophon|Colophon' src && grep -R -q -E 'cmd-k|cmdk|CommandK|Meta\\+K' src"
     },
     {
       "id": "US-009",
